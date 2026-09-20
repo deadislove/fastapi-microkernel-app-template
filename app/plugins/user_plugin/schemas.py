@@ -29,7 +29,7 @@ class UserResponse(BaseModel):
     model_config = {"from_attributes": True}
 
     @classmethod
-    def from_orm_user(cls, user: object) -> "UserResponse":
+    def from_orm_user(cls, user: object) -> UserResponse:
         # Converts the comma-separated roles string to a list before validation
         return cls(
             id=user.id,  # type: ignore[attr-defined]

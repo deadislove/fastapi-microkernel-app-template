@@ -3,19 +3,23 @@ Tests for the microkernel core: registry, event bus, JWT service, and password u
 """
 from __future__ import annotations
 
-from fastapi import FastAPI
-
 import pytest
+from fastapi import FastAPI
 
 from app.config import settings
 from app.core.errors import PluginError, PluginErrorCode
 from app.core.hooks import EventBus
-from app.core.loader import PluginLoadError, PluginLoader
+from app.core.loader import PluginLoader, PluginLoadError
 from app.core.plugin_base import KERNEL_API_VERSION, AbstractPlugin, is_api_version_compatible
-from app.core.registry import PluginRegistry, PluginState, ServiceRegistry, plugin_registry, service_registry
+from app.core.registry import (
+    PluginRegistry,
+    PluginState,
+    ServiceRegistry,
+    plugin_registry,
+    service_registry,
+)
 from app.infrastructure.jwt import JWTService
 from app.infrastructure.password import hash_password, verify_password
-
 
 # ── Registry ──────────────────────────────────────────────────────────────────
 
@@ -161,7 +165,6 @@ def test_jwt_invalid_token():
 
 
 def test_jwt_expired_token():
-    from datetime import timedelta
     svc = JWTService(secret="test-secret", algorithm="HS256", access_expire_minutes=-1, refresh_expire_days=7)
     token = svc.create_access_token("user-123")
     result = svc.decode_access_token(token)
@@ -597,8 +600,8 @@ def test_catalog_facade_router_is_registered_for_auto_mount():
 
 
 def test_facade_registry_duplicate_raises():
-    from app.facades.registry import FacadeRegistry
     from app.facades.base import AbstractFacade
+    from app.facades.registry import FacadeRegistry
 
     class _DupFacade(AbstractFacade):
         name = "dup_facade_for_test"
@@ -610,8 +613,8 @@ def test_facade_registry_duplicate_raises():
 
 
 def test_facade_registry_nameless_raises():
-    from app.facades.registry import FacadeRegistry
     from app.facades.base import AbstractFacade
+    from app.facades.registry import FacadeRegistry
 
     class _Nameless(AbstractFacade):
         name = ""
@@ -622,8 +625,8 @@ def test_facade_registry_nameless_raises():
 
 
 def test_facade_registry_router_is_optional():
-    from app.facades.registry import FacadeRegistry
     from app.facades.base import AbstractFacade
+    from app.facades.registry import FacadeRegistry
 
     class _RouterlessFacade(AbstractFacade):
         name = "routerless_facade_for_test"
@@ -637,8 +640,8 @@ def test_facade_registry_router_is_optional():
 def test_facade_registry_routers_returns_registered_routers():
     from fastapi import APIRouter
 
-    from app.facades.registry import FacadeRegistry
     from app.facades.base import AbstractFacade
+    from app.facades.registry import FacadeRegistry
 
     class _RoutedFacade(AbstractFacade):
         name = "routed_facade_for_test"

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 
-class PluginErrorCode(str, Enum):
+class PluginErrorCode(StrEnum):
     """Canonical error codes shared across all plugins and facades."""
 
     # Generic
@@ -53,43 +53,43 @@ class PluginError(Exception):
 
     # Convenience constructors — keeps call sites terse
     @classmethod
-    def not_found(cls, resource: str, identifier: object = None) -> "PluginError":
+    def not_found(cls, resource: str, identifier: object = None) -> PluginError:
         msg = f"{resource} not found"
         if identifier is not None:
             msg += f": {identifier}"
         return cls(PluginErrorCode.NOT_FOUND, msg)
 
     @classmethod
-    def already_exists(cls, resource: str, identifier: object = None) -> "PluginError":
+    def already_exists(cls, resource: str, identifier: object = None) -> PluginError:
         msg = f"{resource} already exists"
         if identifier is not None:
             msg += f": {identifier}"
         return cls(PluginErrorCode.ALREADY_EXISTS, msg)
 
     @classmethod
-    def invalid_credentials(cls) -> "PluginError":
+    def invalid_credentials(cls) -> PluginError:
         return cls(PluginErrorCode.INVALID_CREDENTIALS, "Invalid username or password.")
 
     @classmethod
-    def permission_denied(cls, reason: str = "") -> "PluginError":
+    def permission_denied(cls, reason: str = "") -> PluginError:
         return cls(PluginErrorCode.PERMISSION_DENIED, reason or "Permission denied.")
 
     @classmethod
-    def unauthenticated(cls) -> "PluginError":
+    def unauthenticated(cls) -> PluginError:
         return cls(PluginErrorCode.UNAUTHENTICATED, "Authentication required.")
 
     @classmethod
-    def token_expired(cls) -> "PluginError":
+    def token_expired(cls) -> PluginError:
         return cls(PluginErrorCode.TOKEN_EXPIRED, "Token has expired.")
 
     @classmethod
-    def token_invalid(cls) -> "PluginError":
+    def token_invalid(cls) -> PluginError:
         return cls(PluginErrorCode.TOKEN_INVALID, "Token is invalid.")
 
     @classmethod
-    def database_error(cls, detail: str = "") -> "PluginError":
+    def database_error(cls, detail: str = "") -> PluginError:
         return cls(PluginErrorCode.DATABASE_ERROR, detail or "A database error occurred.")
 
     @classmethod
-    def validation_error(cls, detail: str = "") -> "PluginError":
+    def validation_error(cls, detail: str = "") -> PluginError:
         return cls(PluginErrorCode.VALIDATION_ERROR, detail or "Validation failed.")

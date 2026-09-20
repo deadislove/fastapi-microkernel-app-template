@@ -202,3 +202,21 @@ pytest -v                 # verbose output
 ```
 
 Tests use an **in-memory SQLite** database — no external services required.
+
+---
+
+## Documentation
+
+In-depth technical docs live in [`docs/technical/`](./docs/technical/) — architecture, plugin development, operations, API conventions, and testing.
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for dev setup, the pre-PR checklist, and how to scaffold a new plugin. Participation is governed by our [Code of Conduct](./CODE_OF_CONDUCT.md).
+
+## Security
+
+See [SECURITY.md](./SECURITY.md) to report a vulnerability privately, and for a list of known, intentional simplifications this template makes.
+
+## License
+
+MIT — see [LICENSE](./LICENSE). Copyright (c) 2026 [Ta-Wei Lin](https://www.linkedin.com/in/da-wei-lin-689a35107/).

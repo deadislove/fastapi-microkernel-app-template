@@ -25,10 +25,10 @@ class FacadeRegistry:
     """
 
     def __init__(self) -> None:
-        self._facades: dict[str, type["AbstractFacade"]] = {}
+        self._facades: dict[str, type[AbstractFacade]] = {}
         self._routers: dict[str, APIRouter] = {}
 
-    def register(self, facade_cls: type["AbstractFacade"], *, router: APIRouter | None = None) -> None:
+    def register(self, facade_cls: type[AbstractFacade], *, router: APIRouter | None = None) -> None:
         if not facade_cls.name:
             raise ValueError(f"Facade {facade_cls.__name__} must define a non-empty `name`.")
         if facade_cls.name in self._facades:
@@ -37,7 +37,7 @@ class FacadeRegistry:
         if router is not None:
             self._routers[facade_cls.name] = router
 
-    def get(self, name: str) -> "type[AbstractFacade] | None":
+    def get(self, name: str) -> type[AbstractFacade] | None:
         return self._facades.get(name)
 
     def names(self) -> list[str]:

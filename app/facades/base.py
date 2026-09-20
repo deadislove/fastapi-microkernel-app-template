@@ -6,7 +6,7 @@ from typing import ClassVar
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-class AbstractFacade(ABC):
+class AbstractFacade(ABC):  # noqa: B024 — `name` is checked at registration time (FacadeRegistry.register), not via an abstractmethod; ABC here documents intent, not enforcement
     """
     Base contract every facade must satisfy.
 

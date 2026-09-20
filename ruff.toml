@@ -7,3 +7,10 @@ ignore = ["E501"]  # line length handled by formatter
 
 [lint.isort]
 known-first-party = ["app"]
+
+[lint.flake8-bugbear]
+# FastAPI's `Depends(...)`/`Query(...)`/etc. in a function's default arguments
+# is the idiomatic, required pattern — not the mutable-default-argument
+# footgun B008 exists to catch. Without this, every route handler in the
+# project would trip B008.
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "fastapi.Path", "fastapi.Body", "fastapi.Header"]

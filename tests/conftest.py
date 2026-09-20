@@ -8,10 +8,10 @@ import os
 # default to a real `./dev.db` file and leave it behind after every test run.
 os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
 
+import contextlib
 import importlib
 from pathlib import Path
 
-import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -37,10 +37,9 @@ def _import_all_plugin_models() -> None:
     for entry in sorted(_PLUGINS_DIR.iterdir()):
         if not entry.is_dir() or entry.name.startswith("_"):
             continue
-        try:
+        with contextlib.suppress(ImportError):
+            # a plugin without models.py has nothing to register
             importlib.import_module(f"app.plugins.{entry.name}.models")
-        except ImportError:
-            pass  # a plugin without models.py has nothing to register
 
 
 @pytest_asyncio.fixture(scope="session")
@@ -94,6 +93,8 @@ async def client(engine):
 
     app.dependency_overrides[db_factory.get_session] = override_get_session
 
-    async with app.router.lifespan_context(app):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
-            yield ac
+    async with (
+        app.router.lifespan_context(app),
+        AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac,
+    ):
+        yield ac

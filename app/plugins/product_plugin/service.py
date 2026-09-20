@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from result import Err, Ok, Result
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from result import Err, Ok, Result
 
 from app.core.errors import PluginError, PluginErrorCode
 from app.core.hooks import event_bus

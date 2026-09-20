@@ -8,9 +8,11 @@ from pathlib import Path
 from fastapi import FastAPI
 from result import Err, Ok, Result
 
-from app.config import Settings, settings as _default_settings
+from app.config import Settings
+from app.config import settings as _default_settings
 from app.core.errors import PluginError, PluginErrorCode
-from app.core.hooks import EventBus, ScopedEventBus, event_bus as _default_event_bus
+from app.core.hooks import EventBus, ScopedEventBus
+from app.core.hooks import event_bus as _default_event_bus
 from app.core.plugin_base import (
     KERNEL_API_VERSION,
     AbstractPlugin,
@@ -22,10 +24,15 @@ from app.core.registry import (
     PluginState,
     ScopedServiceRegistry,
     ServiceRegistry,
+)
+from app.core.registry import (
     plugin_registry as _default_plugin_registry,
+)
+from app.core.registry import (
     service_registry as _default_service_registry,
 )
-from app.infrastructure.database import DatabaseFactory, db_factory as _default_db_factory
+from app.infrastructure.database import DatabaseFactory
+from app.infrastructure.database import db_factory as _default_db_factory
 
 logger = logging.getLogger(__name__)
 

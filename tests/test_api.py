@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import pytest
 
-
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 async def _register_and_login(client, username: str, password: str = "password123") -> str:

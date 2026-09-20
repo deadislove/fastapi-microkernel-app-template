@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable
+from collections.abc import Callable
+from enum import StrEnum
+from typing import TYPE_CHECKING, Any
 
 from result import Err, Ok, Result
 
@@ -11,7 +12,7 @@ if TYPE_CHECKING:
     from app.core.plugin_base import AbstractPlugin
 
 
-class PluginState(str, Enum):
+class PluginState(StrEnum):
     """
     Lifecycle state of a single plugin, tracked by PluginRegistry.
 
@@ -44,11 +45,11 @@ class PluginRegistry:
     """
 
     def __init__(self) -> None:
-        self._plugins: dict[str, "AbstractPlugin"] = {}
+        self._plugins: dict[str, AbstractPlugin] = {}
         self._states: dict[str, PluginState] = {}
         self._errors: dict[str, str] = {}
 
-    def register(self, plugin: "AbstractPlugin") -> None:
+    def register(self, plugin: AbstractPlugin) -> None:
         if not plugin.name:
             raise ValueError(f"Plugin {type(plugin).__name__} must define a non-empty `name`.")
         if plugin.name in self._plugins:
@@ -57,10 +58,10 @@ class PluginRegistry:
         self._states[plugin.name] = PluginState.PENDING
         self._errors.pop(plugin.name, None)
 
-    def get(self, name: str) -> "AbstractPlugin | None":
+    def get(self, name: str) -> AbstractPlugin | None:
         return self._plugins.get(name)
 
-    def all(self) -> list["AbstractPlugin"]:
+    def all(self) -> list[AbstractPlugin]:
         return list(self._plugins.values())
 
     def names(self) -> list[str]:

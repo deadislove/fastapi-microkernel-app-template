@@ -25,7 +25,7 @@ class GlobalExceptionMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         try:
             return await call_next(request)
-        except Exception as exc:
+        except Exception:
             # Full traceback in logs; only a safe summary goes to the client
             logger.error(
                 "Unhandled exception on %s %s\n%s",

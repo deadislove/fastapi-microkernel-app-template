@@ -3,16 +3,15 @@ from __future__ import annotations
 import asyncio
 from logging.config import fileConfig
 
-from alembic import context
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from app.config import settings
+import app.plugins.product_plugin.models  # noqa: F401
 
 # Import all models so Alembic can detect schema changes automatically.
 # Add new plugin model imports here as the project grows.
 import app.plugins.user_plugin.models  # noqa: F401
-import app.plugins.product_plugin.models  # noqa: F401
-
+from alembic import context
+from app.config import settings
 from app.infrastructure.database import Base
 
 config = context.config

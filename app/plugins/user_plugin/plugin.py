@@ -35,7 +35,6 @@ class UserPlugin(AbstractPlugin):
         # package — a bare `import app.plugins...` would shadow it and break
         # the `app.include_router(...)` call below.
         import app.plugins.user_plugin.models as _models  # noqa: F401
-
         from app.plugins.user_plugin.router import auth_router, router
 
         app.include_router(auth_router, prefix="/api/v1")

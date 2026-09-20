@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import PluginErrorCode
 from app.core.rate_limiter import limiter
-from app.core.security import get_current_user_payload, require_admin
+from app.core.security import require_admin
 from app.infrastructure.database import db_factory
 from app.infrastructure.jwt import TokenPayload
 from app.plugins.product_plugin.schemas import (

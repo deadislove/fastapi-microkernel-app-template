@@ -12,7 +12,6 @@ from app.infrastructure.jwt import TokenPayload
 from app.plugins.product_plugin.schemas import (
     ProductCreate,
     ProductResponse,
-    ProductUpdate,
     StockAdjustment,
 )
 

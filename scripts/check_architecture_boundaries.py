@@ -52,9 +52,8 @@ def _module_imports(path: Path) -> list[str]:
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             modules.extend(alias.name for alias in node.names)
-        elif isinstance(node, ast.ImportFrom):
-            if node.module and node.level == 0:
-                modules.append(node.module)
+        elif isinstance(node, ast.ImportFrom) and node.module and node.level == 0:
+            modules.append(node.module)
     return modules
 
 
@@ -104,15 +103,18 @@ def check() -> list[str]:
                 )
 
             # Rule 2: kernel route layer importing plugin internals.
-            if own_module.startswith("app.api.v1.") and imported_plugin:
-                if any(
+            if (
+                own_module.startswith("app.api.v1.")
+                and imported_plugin
+                and any(
                     imported.startswith(f"app.plugins.{imported_plugin}.{suffix}")
                     for suffix in ("schemas", "service", "models")
-                ):
-                    violations.append(
-                        f"{path}: kernel route module imports plugin internal "
-                        f"'{imported}' — core routes must stay plugin-agnostic."
-                    )
+                )
+            ):
+                violations.append(
+                    f"{path}: kernel route module imports plugin internal "
+                    f"'{imported}' — core routes must stay plugin-agnostic."
+                )
 
             # Rule 3: kernel (app.core.*) importing any plugin.
             if own_module.startswith("app.core.") and imported_plugin:

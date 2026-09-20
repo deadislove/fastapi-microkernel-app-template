@@ -19,7 +19,6 @@ class ProductPlugin(AbstractPlugin):
         # package — a bare `import app.plugins...` would shadow it and break
         # the `app.include_router(...)` call below.
         import app.plugins.product_plugin.models as _models  # noqa: F401
-
         from app.plugins.product_plugin.router import router
 
         app.include_router(router, prefix="/api/v1")
