@@ -111,18 +111,29 @@ class ServiceRegistry:
     name) so a hot-reload can selectively `revoke_all_from(owner)` instead of
     wiping every plugin's capabilities via `clear()`.
 
-    Scope of the `ctx`-only rule: a plugin's `register()`/`boot()`/`shutdown()`
-    MUST reach this registry through `ctx.service_registry` (a
-    `ScopedServiceRegistry`) — never by importing this module's
-    `service_registry` singleton directly — because `provide()` needs the
-    `owner` tag for hot-reload to work. `resolve()`, however, only reads; it
-    registers nothing and needs no scoping. A facade or a plugin's own
-    `service.py`/`router.py` (neither of which receives a `ctx`) calling
-    `service_registry.resolve(...)` directly is intentional and safe, not a
-    violation — see docs/spec/done/microkernel-architecture-refinements.md
-    S4.1/S4.2 for the full reasoning. `scripts/check_architecture_boundaries.py`'s
-    Rule 4 enforces the `ctx`-only requirement on `plugin.py` only, for this
-    reason.
+    Scope of the `ctx`-only rule (why `provide()` and `resolve()` are treated
+    differently):
+
+    Why: hot-reload needs to revoke exactly one plugin's published
+    capabilities without touching anyone else's — that's only possible if
+    every entry is tagged with which plugin owns it.
+
+    What: `provide()` is what creates that tag, so it must go through
+    `ctx.service_registry` (a `ScopedServiceRegistry`) rather than importing
+    this module's `service_registry` singleton directly — the plain singleton
+    has no plugin name to attach. `resolve()`, by contrast, only reads and
+    registers nothing, so it needs no tag and no scoping. A facade, or a
+    plugin's own `service.py`/`router.py` (neither of which ever receives a
+    `ctx` — see `AbstractPlugin`/`KernelContext` in `plugin_base.py`),
+    importing this singleton to call `resolve(...)` directly is therefore
+    intentional and safe, not a violation of the "reach the kernel only
+    through `ctx`" rule.
+
+    Solution: `scripts/check_architecture_boundaries.py`'s Rule 4 encodes
+    exactly this split automatically — it only flags a bare
+    `service_registry` import inside a plugin's `plugin.py` (where `provide()`
+    is called), not inside `service.py`/`router.py` (where only `resolve()`
+    is legitimate).
     """
 
     def __init__(self) -> None:

@@ -105,7 +105,7 @@ async def test_event_bus_unsubscribe():
     assert called == []
 
 
-# ── EventBus introspection (Phase 5 / 5.1) ────────────────────────────────────────
+# ── EventBus introspection ────────────────────────────────────────
 
 def test_event_bus_subscriptions_reports_owners():
     async def handler(**kwargs):
@@ -191,7 +191,7 @@ def test_plugin_error_constructors():
     assert err2.code == PluginErrorCode.INVALID_CREDENTIALS
 
 
-# ── PluginRegistry state tracking (Phase 1 / 3.4) ───────────────────────────────
+# ── PluginRegistry state tracking ───────────────────────────────
 
 def test_registry_tracks_pending_state_on_register():
     reg = PluginRegistry()
@@ -228,7 +228,7 @@ def test_registry_unregister_clears_state_and_error():
     assert reg.error_of("fake") is None
 
 
-# ── ServiceRegistry (Phase 1 / 3.1) ──────────────────────────────────────────────
+# ── ServiceRegistry ──────────────────────────────────────────────
 
 def test_service_registry_provide_and_resolve():
     reg = ServiceRegistry()
@@ -262,7 +262,7 @@ def test_service_registry_clear():
     assert reg.names() == []
 
 
-# ── PluginLoader failure isolation (Phase 1 / 3.4) ───────────────────────────────
+# ── PluginLoader failure isolation ───────────────────────────────
 
 class _LoaderGoodPlugin(AbstractPlugin):
     name = "loader_test_good"
@@ -351,7 +351,7 @@ async def test_loader_best_effort_isolates_failure_and_continues(monkeypatch):
     assert plugin_registry.get("loader_test_bad_boot") is None
 
 
-# ── PluginLoader accepts an injected plugin_registry (Phase 5 / 4.7) ─────────────
+# ── PluginLoader accepts an injected plugin_registry ─────────────
 
 @pytest.mark.asyncio
 async def test_loader_uses_injected_plugin_registry_not_the_global_one(monkeypatch):
@@ -376,7 +376,7 @@ async def test_loader_uses_injected_plugin_registry_not_the_global_one(monkeypat
     assert fake_registry.get("loader_test_good") is None
 
 
-# ── Plugin dependency ordering (Phase 2 / 3.3) ───────────────────────────────────
+# ── Plugin dependency ordering ───────────────────────────────────
 
 class _DepPluginA(AbstractPlugin):
     name = "loader_test_dep_a"
@@ -466,7 +466,7 @@ def test_resolve_load_order_circular_dependency_raises():
         loader._resolve_load_order([_DepPluginCycleA(), _DepPluginCycleB()])
 
 
-# ── enabled_plugins / dependencies error message differentiation (4.6) ───────────
+# ── enabled_plugins / dependencies error message differentiation ───────────
 
 class _ConsumerOfDisabledDep(AbstractPlugin):
     name = "loader_test_dep_consumer"
@@ -524,7 +524,7 @@ async def test_loader_best_effort_skips_dependents_of_failed_plugin(monkeypatch)
     assert "dependency failed" in plugin_registry.error_of("loader_test_dependent_on_bad")
 
 
-# ── Plugin enable/disable via settings (Phase 2 / 3.5) ───────────────────────────
+# ── Plugin enable/disable via settings ───────────────────────────
 
 def test_discover_respects_enabled_plugins(monkeypatch):
     monkeypatch.setattr(settings, "enabled_plugins", ["user_plugin"])
@@ -540,7 +540,7 @@ def test_discover_loads_everything_when_enabled_plugins_is_none(monkeypatch):
     assert {"user_plugin", "product_plugin"}.issubset(names)
 
 
-# ── Kernel Context (Phase 3 / 3.8) ────────────────────────────────────────────────
+# ── Kernel Context ────────────────────────────────────────────────
 
 @pytest.mark.asyncio
 async def test_loader_passes_kernel_context_into_lifecycle_hooks():
@@ -578,7 +578,7 @@ async def test_loader_passes_kernel_context_into_lifecycle_hooks():
     assert ctx.settings is settings
 
 
-# ── FacadeRegistry (Phase 3 / 3.10) ───────────────────────────────────────────────
+# ── FacadeRegistry ───────────────────────────────────────────────
 
 def test_catalog_facade_is_self_registered():
     # Importing app.facades (triggered by importing facade_registry) runs
@@ -652,7 +652,7 @@ def test_facade_registry_routers_returns_registered_routers():
     assert reg.routers() == [fake_router]
 
 
-# ── Plugin contract versioning (Phase 4 / 3.7) ────────────────────────────────────
+# ── Plugin contract versioning ────────────────────────────────────
 
 def test_is_api_version_compatible_matches_major_only():
     assert is_api_version_compatible("1.0", kernel_version="1.5") is True

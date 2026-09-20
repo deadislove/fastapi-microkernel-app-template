@@ -221,13 +221,22 @@ class PluginLoader:
 
     def _missing_dependency_message(self, plugin_name: str, dep: str) -> str:
         """
-        Distinguishes two very different situations behind the same "not
-        discovered" symptom: a genuinely nonexistent plugin name (a typo, or
-        a dependency that was never written) vs. a plugin that exists on
-        disk but was deliberately excluded via `enabled_plugins` — the first
-        is almost certainly a bug, the second is an environment/config
-        choice that happens to conflict with a dependency declaration. See
-        docs/spec/done/microkernel-architecture-refinements.md S4.6.
+        Why: a plugin dependency that "isn't discovered" can mean two very
+        different things, and a maintainer staring at a startup crash
+        shouldn't have to guess which. Collapsing both into one generic
+        message wastes time on the far more common, more urgent case (a typo
+        or a dependency that was simply never written).
+
+        What: it might be a genuinely nonexistent plugin name (a bug, almost
+        certainly), or it might be a plugin that exists on disk but was
+        deliberately excluded via `enabled_plugins` (an environment/config
+        choice that happens to conflict with a `dependencies` declaration —
+        not a bug in the plugin itself).
+
+        Solution: check whether the dependency's directory actually exists
+        under `app/plugins/` before deciding which message to raise, so the
+        error text itself tells the reader which of the two situations they're
+        in and what to do about it.
         """
         enabled = self._settings.enabled_plugins
         exists_on_disk = (_PLUGINS_DIR / dep).is_dir()
@@ -291,7 +300,7 @@ class PluginLoader:
 
         return plugins
 
-    # ── Hot reload (Phase 4 / 3.12) ───────────────────────────────────────────
+    # ── Hot reload: reload a single plugin without a full process restart ────
 
     def _drop_routes_for(self, name: str) -> int:
         """Removes every route owned by plugin `name` from the live app."""
@@ -316,21 +325,29 @@ class PluginLoader:
         `service`/`router`/`plugin` submodules, then runs a fresh instance's
         register()+boot().
 
-        Deliberately does NOT reload `models.py`/`schemas.py`: SQLAlchemy's
-        `Base.metadata` is a process-wide registry that doesn't support
-        redefining a table's mapped class, so schema changes are out of scope
-        for hot-reload and always require a full process restart — see
-        docs/spec/done/microkernel-architecture-improvements.md S3.12.
+        Why not reload `models.py`/`schemas.py` too: SQLAlchemy's
+        `Base.metadata` is a process-wide registry — once a table's mapped
+        class is registered there, the library gives no supported way to
+        redefine it. What this means in practice: a schema change (a new
+        column, a new table) can't be picked up by re-importing code alone.
+        Solution: `_HOT_RELOAD_SUBMODULES` deliberately excludes `models`
+        and `schemas`; a schema change always requires a full process
+        restart, and this method doesn't pretend otherwise.
 
-        Does NOT reload — or even know how to safely reload — any other
-        plugin that declares `name` in its own `dependencies`. On success,
-        the returned list names every currently-loaded plugin in that
-        situation, so the caller can decide whether to reload them too (see
-        docs/spec/done/microkernel-architecture-refinements.md S4.5). This
-        is advisory only: a dependent plugin that only resolves its
-        dependency's capability per-call (the pattern every shipped plugin
-        uses) keeps working correctly without any action — the list matters
-        for plugins that cached something from their dependency at `boot()`.
+        Why this doesn't reload dependents: figuring out whether a dependent
+        plugin's own state is still valid after its dependency changes
+        depends entirely on what that dependent plugin actually does with the
+        dependency — this method has no way to know that safely. What that
+        means: reloading `name` never touches any other plugin that declares
+        `name` in its own `dependencies`, even if that dependent's behavior
+        was implicitly relying on the old version. Solution: on success, the
+        returned list names every currently-loaded plugin in that situation,
+        so the *caller* — who has that context — can decide whether to
+        reload them too. This is advisory only: a dependent plugin that only
+        resolves its dependency's capability per-call (the pattern every
+        shipped plugin uses) keeps working correctly with no action needed;
+        the list matters for a plugin that cached something from its
+        dependency back in `boot()`.
         """
         plugin = self._plugin_registry.get(name)
         if plugin is None:

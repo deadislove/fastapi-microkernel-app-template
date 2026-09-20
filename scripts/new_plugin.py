@@ -1,9 +1,13 @@
 """
-Scaffold a new plugin skeleton that follows the current AbstractPlugin
-contract (KernelContext, dependencies, api_version) documented in
-docs/spec/done/microkernel-architecture-improvements.md (S3.14) — so a new
-plugin starts out already respecting the Microkernel boundary rules instead
-of relying on the author remembering every convention from the README.
+Why this script exists: a new plugin has several conventions to get right
+(the `AbstractPlugin` contract, the `ctx.service_registry`/`ctx.event_bus`
+scoping rules, the `as _models` import alias, ...) — expecting every author
+to remember all of them from documentation alone means some will inevitably
+be missed. What this does about it: generates a skeleton that already
+follows the current `AbstractPlugin` contract (`KernelContext`, `dependencies`,
+`api_version`, `version`) and the Microkernel boundary rules, so a new plugin
+starts out correct instead of starting out as a copy-paste with gaps. See
+docs/technical/plugin-development.md for the full contract this mirrors.
 
 Usage:
     python scripts/new_plugin.py <plugin_directory_name>
@@ -62,6 +66,11 @@ class {class_name}(AbstractPlugin):
 
     # Other plugin names that must finish register()+boot() before this one.
     # dependencies = ["user_plugin"]
+
+    # This plugin's own release version — purely informational, shown by
+    # GET /api/v1/health. Not to be confused with api_version (kernel-contract
+    # compatibility, checked by the loader); this one is inspected by nothing.
+    # version = "1.0.0"
 
     async def register(self, app: FastAPI, ctx: KernelContext) -> None:
         # `as _models` avoids rebinding the `app` parameter to the `app`

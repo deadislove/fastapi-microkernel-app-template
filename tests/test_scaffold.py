@@ -1,15 +1,18 @@
 """
-Phase 4 (3.14): the scaffold generator's rendering logic must produce
-syntactically valid, on-contract plugin code. This deliberately does NOT
-call `scripts/new_plugin.py main()` — that writes into the real
+The scaffold generator's rendering logic must produce syntactically valid,
+on-contract plugin code. This deliberately does NOT call
+`scripts/new_plugin.py`'s `main()` — that writes into the real
 app/plugins/ directory, which a test run must never do as a side effect.
 Instead it exercises `_render()` directly (pure string generation, no I/O)
 and compiles each output.
 
-An actual end-to-end run (scaffold a plugin into a scratch copy of the repo,
-run its generated test, run the full suite) was performed manually while
-building this feature; see the Phase 4 checklist in
-docs/spec/done/microkernel-architecture-improvements.md for that trace.
+That's necessarily a lighter check than "does the mechanism actually work
+end-to-end" — compiling isn't the same as running. An actual end-to-end run
+(scaffold a plugin into a scratch copy of the repo, run its generated test,
+run the full suite) was performed manually while building this feature and
+is not repeated here as a permanent test: a one-off manual verification like
+that is meant to be done once and recorded, not left as throwaway code in
+the suite (see docs/technical/testing.md, "Testing conventions").
 """
 from __future__ import annotations
 

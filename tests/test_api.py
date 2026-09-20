@@ -42,7 +42,8 @@ async def test_health_check(client):
         assert entry["dependencies"] == []
         assert entry["error"] is None
 
-    # capabilities/event_subscriptions (5.1): the two published service
+    # capabilities/event_subscriptions turn service_registry/event_bus from a
+    # black box into something visible at runtime: the two published service
     # factories, and user_plugin's real subscription to product.created.
     assert "product_service_factory" in body["capabilities"]
     assert "user_service_factory" in body["capabilities"]

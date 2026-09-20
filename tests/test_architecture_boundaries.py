@@ -1,10 +1,11 @@
 """
-Enforces the Microkernel module-boundary rules from
-docs/spec/done/microkernel-architecture-improvements.md (S3.11) and
-docs/spec/done/microkernel-architecture-refinements.md (S4.4) as part of
-the regular test suite. This repo has no CI pipeline of its own to hook a
-linter into, so `pytest` — the one gate that already runs on every change —
-is where this check lives.
+Enforces the Microkernel module-boundary rules (see docs/technical/architecture.md,
+"Module boundaries", and the docstring of scripts/check_architecture_boundaries.py
+for what the four rules are and why) as part of the regular test suite —
+`.github/workflows/CI.yaml` also runs the script directly as its own step,
+but wiring it into `pytest` too means a local `pytest` run catches a
+violation just as reliably as CI does, without needing to remember a second
+command.
 """
 from __future__ import annotations
 

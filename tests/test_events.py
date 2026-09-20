@@ -1,7 +1,7 @@
 """
-Phase 3 (3.6): proves the EventBus enables real cross-plugin collaboration —
-user_plugin subscribes to product_plugin's `product.created` event in boot()
-without ever importing anything from app.plugins.product_plugin — and that
+Proves the EventBus enables real cross-plugin collaboration — user_plugin
+subscribes to product_plugin's `product.created` event in boot() without
+ever importing anything from app.plugins.product_plugin — and that
 user_plugin still boots fine when product_plugin isn't loaded at all.
 """
 from __future__ import annotations

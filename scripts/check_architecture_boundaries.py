@@ -1,7 +1,9 @@
 """
-Static check for the Microkernel module-boundary rules documented in
-docs/spec/done/microkernel-architecture-improvements.md (S3.11 / S3.13) and
-docs/spec/done/microkernel-architecture-refinements.md (S4.4):
+Why this script exists: the Microkernel module-boundary rules (see
+docs/technical/architecture.md, "Module boundaries") are only real if
+something enforces them — a rule that lives purely in a docstring or a code
+review checklist gets missed the moment someone is in a hurry. What it
+checks, by walking every `.py` file under `app/` with `ast`:
 
   1. app.plugins.<a> must not import app.plugins.<b> for a != b — plugins may
      only reach each other via app.core.registry.service_registry or
@@ -14,17 +16,18 @@ docs/spec/done/microkernel-architecture-refinements.md (S4.4):
      import the `service_registry`/`event_bus` singletons directly — it must
      reach them through the `ctx: KernelContext` parameter instead, since
      `ctx.service_registry`/`ctx.event_bus` are scoped views that tag the
-     plugin's name for hot-reload cleanup. This rule is deliberately scoped
-     to `plugin.py` only: a plugin's `service.py`/`router.py` (which never
-     receive a `ctx`) MAY import `service_registry`/`event_bus` directly to
-     call `.resolve(...)`/`.emit(...)` — neither registers anything, so
-     neither needs scoping. See refinements.md S4.1/S4.2/S4.4 for the full
-     reasoning.
+     plugin's name for hot-reload cleanup (see `ServiceRegistry`/`EventBus` in
+     `app/core/registry.py`/`app/core/hooks.py` for why that tag matters).
+     This rule is deliberately scoped to `plugin.py` only: a plugin's
+     `service.py`/`router.py` (which never receive a `ctx`) MAY import
+     `service_registry`/`event_bus` directly to call `.resolve(...)`/
+     `.emit(...)` — neither registers anything, so neither needs scoping.
 
-Run directly: `python scripts/check_architecture_boundaries.py`
-Also wired into the test suite via tests/test_architecture_boundaries.py, so
-`pytest` is the enforcement gate for this repo (it has no CI pipeline of its
-own to hook into).
+Solution for making the rules stick: wire this into the test suite
+(`tests/test_architecture_boundaries.py`) so `pytest` — the one gate this
+repo already runs on every change — fails on a violation instead of relying
+on a human to notice one in review. Run directly with:
+`python scripts/check_architecture_boundaries.py`
 """
 from __future__ import annotations
 
@@ -144,8 +147,8 @@ def main() -> int:
             print(f"  - {v}")
         print(
             f"\n{len(violations)} violation(s). See "
-            "docs/spec/done/microkernel-architecture-improvements.md S3.11 and "
-            "docs/spec/done/microkernel-architecture-refinements.md S4.4."
+            "docs/technical/architecture.md, \"Module boundaries\", for what "
+            "these four rules are and why each one exists."
         )
         return 1
     print("No architecture boundary violations found.")

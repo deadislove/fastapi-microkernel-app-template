@@ -1,10 +1,10 @@
 """
 HTTP tests for the Catalog Facade router (app/facades/router.py).
 
-Exercises the full chain introduced in Phase 1: the relocated facade route
-(no longer living in app/api/v1/) calling CatalogFacade, which resolves the
-User/Product services through `service_registry` instead of importing them
-directly.
+Exercises the full chain: the facade route (living beside its facade in
+app/facades/, not in app/api/v1/ — see docs/technical/architecture.md,
+"Module boundaries") calling CatalogFacade, which resolves the User/Product
+services through `service_registry` instead of importing them directly.
 """
 from __future__ import annotations
 

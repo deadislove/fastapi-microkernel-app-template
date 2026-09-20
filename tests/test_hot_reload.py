@@ -1,5 +1,5 @@
 """
-Phase 4 (3.12): hot-reload a single plugin without a full process restart.
+Hot-reloading a single plugin without a full process restart.
 
 Covers the low-level building blocks (ServiceRegistry.revoke_all_from,
 EventBus.unsubscribe_all_from, Scoped* wrappers) and the end-to-end admin
@@ -132,11 +132,13 @@ async def test_reloaded_plugin_service_capability_still_resolvable(client):
 @pytest.mark.asyncio
 async def test_reload_reports_dependents_that_declare_it(client, monkeypatch):
     """
-    reload_one() doesn't reload dependents automatically (see
-    docs/spec/done/microkernel-architecture-refinements.md S4.5) — it
-    reports them so the caller can decide. Temporarily declares user_plugin
-    as depending on product_plugin (the two shipped plugins don't actually
-    declare any dependency on each other) to exercise that reporting.
+    reload_one() has no safe way to know whether a dependent plugin's state
+    is still valid after its dependency reloads, so it doesn't reload
+    dependents automatically — it only reports them, leaving the decision to
+    the caller (see PluginLoader.reload_one()'s docstring). Temporarily
+    declares user_plugin as depending on product_plugin (the two shipped
+    plugins don't actually declare any dependency on each other) to exercise
+    that reporting.
     """
     from app.plugins.user_plugin.plugin import UserPlugin
 

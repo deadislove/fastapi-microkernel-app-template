@@ -21,12 +21,13 @@ class CatalogFacade(AbstractFacade):
     lets either plugin be removed without breaking this module's imports;
     a missing capability simply surfaces as `Result.Err`.
 
-    Facades don't receive a `KernelContext` (they're not lifecycle-managed
-    like plugins — see AbstractFacade), so this imports the `service_registry`
-    singleton directly rather than going through a `ctx`. That's intentional,
-    not an inconsistency to fix: `resolve()` only reads and registers
-    nothing, so it needs no `owner` scoping the way `provide()`/`subscribe()`
-    do. See docs/spec/done/microkernel-architecture-refinements.md S4.2.
+    Why this imports `service_registry` directly instead of going through a
+    `ctx` (see `AbstractFacade` for the full explanation): facades aren't
+    lifecycle-managed like plugins, so there's no `PluginLoader`-built
+    `KernelContext` to receive here. That's fine, not an inconsistency to
+    fix, because `resolve()` only reads and registers nothing — it's
+    `provide()`/`subscribe()` that need the `owner` tagging `ctx` exists to
+    provide, and this facade never calls either of those.
 
     All methods return Result[T, PluginError] for clean HTTP mapping at the
     router level.

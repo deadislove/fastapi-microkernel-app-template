@@ -27,14 +27,24 @@ class AbstractFacade(ABC):  # noqa: B024 — `name` is checked at registration t
     Dependency direction stays one-way: facades depend on plugins (through
     `service_registry`), plugins must never depend on a facade.
 
-    Unlike `AbstractPlugin.register/boot/shutdown`, facade methods don't
-    receive a `KernelContext` — facades aren't driven through a lifecycle, so
-    there's no natural point to construct and pass one. Resolving a plugin
-    capability via the bare `service_registry` singleton (see
-    `CatalogFacade`) is safe here: `resolve()` only reads, it doesn't need
-    the `owner` scoping that `provide()`/`subscribe()` require for
-    hot-reload. See docs/spec/done/microkernel-architecture-refinements.md
-    S4.2 for the full reasoning.
+    Why facades don't receive a `KernelContext`: `ctx` exists so a plugin's
+    lifecycle hooks don't have to reach for kernel singletons directly — but
+    that only works because `PluginLoader` calls those hooks and can build a
+    fresh `ctx` for each one. Facades aren't driven through any such
+    lifecycle (no `register()`/`boot()`/`shutdown()`, no loader driving
+    them), so there's no natural moment to construct and hand one over.
+
+    What this means in practice: a facade (see `CatalogFacade`) resolves a
+    plugin capability by importing the bare `service_registry` singleton and
+    calling `resolve()` directly, instead of going through `ctx.service_registry`
+    the way a plugin would.
+
+    Solution / why that's still safe: the `owner` tagging that `ctx.service_registry`
+    exists to provide is only needed by `provide()`, so hot-reload knows whose
+    capability to revoke. `resolve()` only reads and registers nothing — there
+    is no `owner` to lose by skipping the wrapper, so a facade importing the
+    singleton directly is not a gap to close, just a consequence of facades
+    having no lifecycle to hang a `ctx` on.
     """
 
     # Unique slug used as the facade's identity in `facade_registry`

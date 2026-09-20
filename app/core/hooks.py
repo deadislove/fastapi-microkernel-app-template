@@ -35,17 +35,27 @@ class EventBus:
     `unsubscribe_all_from(owner)` instead of wiping every plugin's
     subscriptions via `clear()`.
 
-    Scope of the `ctx`-only rule: a plugin's `register()`/`boot()`/`shutdown()`
-    MUST reach the bus through `ctx.event_bus` (a `ScopedEventBus`) — never by
-    importing this module's `event_bus` singleton directly — because
-    `subscribe()` needs the `owner` tag for hot-reload to work.
-    `emit()`, however, is a stateless, fire-and-forget broadcast: it doesn't
-    register anything, so it doesn't need scoping. A plugin's `service.py`
-    (constructed per-request, with no access to any `ctx`) calling
-    `event_bus.emit(...)` directly is intentional and safe, not a violation —
-    see docs/spec/done/microkernel-architecture-refinements.md S4.1 for the
-    full reasoning. `scripts/check_architecture_boundaries.py`'s Rule 4
-    enforces the `ctx`-only requirement on `plugin.py` only, for this reason.
+    Scope of the `ctx`-only rule (why `subscribe()` and `emit()` are treated
+    differently):
+
+    Why: hot-reload needs to remove exactly one plugin's subscriptions
+    without touching anyone else's — only possible if every subscription is
+    tagged with which plugin made it.
+
+    What: `subscribe()` is what creates that tag, so it must go through
+    `ctx.event_bus` (a `ScopedEventBus`) rather than importing this module's
+    `event_bus` singleton directly — the plain singleton has no plugin name to
+    attach. `emit()`, by contrast, is a stateless, fire-and-forget broadcast:
+    it registers nothing, so it needs no tag and no scoping. A plugin's
+    `service.py` (constructed per-request, with no access to any `ctx` — see
+    `AbstractPlugin`/`KernelContext` in `plugin_base.py`) calling
+    `event_bus.emit(...)` directly is therefore intentional and safe, not a
+    violation of the "reach the kernel only through `ctx`" rule.
+
+    Solution: `scripts/check_architecture_boundaries.py`'s Rule 4 encodes
+    exactly this split automatically — it only flags a bare `event_bus`
+    import inside a plugin's `plugin.py` (where `subscribe()` is called), not
+    inside `service.py` (where only `emit()` is legitimate).
     """
 
     def __init__(self) -> None:
@@ -70,9 +80,17 @@ class EventBus:
     def subscriptions(self) -> dict[str, list[str]]:
         """
         Read-only introspection view: event name -> owners currently
-        subscribed to it (see docs/spec/done/microkernel-architecture-observability.md
-        S5.1 — this is what lets `GET /api/v1/health` show which plugins are
-        listening for which events instead of that being a black box).
+        subscribed to it.
+
+        Why: without this, "who is listening for what" is a black box you'd
+        have to grep source code to answer — there's no runtime way to
+        confirm a plugin's `boot()` actually subscribed to the event you
+        expect, or that disabling a plugin really removed its subscription.
+
+        Solution: `GET /api/v1/health` calls this method and exposes the
+        result directly (see `app/api/v1/health.py`), so that question has a
+        runtime answer instead of a source-reading one.
+
         A subscription made without an `owner` (bypassing `ctx.event_bus`)
         is reported as `"<unowned>"`. Events with zero current subscribers
         are omitted.
