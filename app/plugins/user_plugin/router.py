@@ -72,7 +72,7 @@ async def login_form(
     form: OAuth2PasswordRequestForm = Depends(),
     session: AsyncSession = Depends(db_factory.get_session),
 ) -> TokenResponse:
-    """OAuth2-compatible form login — used by Swagger UI's Authorize button."""
+    """OAuth2-compatible form login, used by Swagger UI's Authorize button."""
     result = await UserService(session).authenticate(
         LoginRequest(username=form.username, password=form.password)
     )

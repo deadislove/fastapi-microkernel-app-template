@@ -29,12 +29,12 @@ app/
 │
 ├── facades/        # Cross-plugin coordination
 │   ├── catalog_facade.py   # User ↔ Product operations (resolved via service_registry)
-│   └── router.py           # GET/POST /api/v1/catalog/* — lives beside its facade,
+│   └── router.py           # GET/POST /api/v1/catalog/*: lives beside its facade,
 │                            #   not in api/v1/, so the kernel route layer never
 │                            #   carries a compile-time dependency on a plugin's DTOs
 │
 ├── api/v1/         # Versioned HTTP endpoints owned by the kernel itself
-│   └── health.py           # GET /api/v1/health — kernel + per-plugin lifecycle state
+│   └── health.py           # GET /api/v1/health: kernel + per-plugin lifecycle state
 │
 ├── config.py       # Pydantic Settings (reads .env)
 └── main.py         # FastAPI app factory + lifespan
@@ -81,10 +81,10 @@ Swagger UI: **http://localhost:8000/docs**
 Every plugin lives in `app/plugins/<name>/` and must:
 
 1. Expose a top-level `plugin` attribute (an `AbstractPlugin` instance) in its `__init__.py`
-2. Implement `register(app, ctx)`, `boot(app, ctx)`, and `shutdown(app, ctx)` hooks — `ctx` is a `KernelContext` carrying `event_bus`, `settings`, `service_registry`, and `db_factory`, so a plugin's dependency on the kernel is visible in its signature instead of hidden behind `from app.core... import ...`
-3. Import its SQLAlchemy models inside `register()` so the DB factory picks them up (use `import ... as _models`, not a bare `import app.plugins...` — the latter rebinds the `app` parameter to the `app` package and breaks `app.include_router(...)`)
-4. Declare any other plugins it depends on via `dependencies`, and publish anything it wants other plugins/facades to use via `ctx.service_registry` in `boot()` — never by letting another module `import` this plugin's `Service`/model classes directly
-5. Subscribe to other plugins' events via `ctx.event_bus.subscribe(...)` in `boot()` (not `register()` — every plugin has finished `register()` by the time `boot()` runs) instead of importing the emitting plugin at all
+2. Implement `register(app, ctx)`, `boot(app, ctx)`, and `shutdown(app, ctx)` hooks; `ctx` is a `KernelContext` carrying `event_bus`, `settings`, `service_registry`, and `db_factory`, so a plugin's dependency on the kernel is visible in its signature instead of hidden behind `from app.core... import ...`
+3. Import its SQLAlchemy models inside `register()` so the DB factory picks them up (use `import ... as _models`, not a bare `import app.plugins...`; the latter rebinds the `app` parameter to the `app` package and breaks `app.include_router(...)`)
+4. Declare any other plugins it depends on via `dependencies`, and publish anything it wants other plugins/facades to use via `ctx.service_registry` in `boot()`, never by letting another module `import` this plugin's `Service`/model classes directly
+5. Subscribe to other plugins' events via `ctx.event_bus.subscribe(...)` in `boot()` (not `register()`; every plugin has finished `register()` by the time `boot()` runs) instead of importing the emitting plugin at all
 
 ```python
 # app/plugins/my_plugin/__init__.py
@@ -119,27 +119,27 @@ class MyPlugin(AbstractPlugin):
     async def _on_user_created(**kwargs) -> None: ...
 ```
 
-If a plugin's `register()`/`boot()` raises, the kernel isolates it: `settings.plugin_load_mode` controls whether that aborts the whole startup (`fail_fast`, the default) or just skips that plugin — and anything depending on it — while the rest of the kernel still starts (`best_effort`). `GET /api/v1/health` reports each plugin's `state` (`PENDING`/`REGISTERED`/`BOOTED`/`FAILED`/`SHUTDOWN`), `api_version`, `dependencies`, and `error`.
+If a plugin's `register()`/`boot()` raises, the kernel isolates it: `settings.plugin_load_mode` controls whether that aborts the whole startup (`fail_fast`, the default) or just skips that plugin (and anything depending on it) while the rest of the kernel still starts (`best_effort`). `GET /api/v1/health` reports each plugin's `state` (`PENDING`/`REGISTERED`/`BOOTED`/`FAILED`/`SHUTDOWN`), `api_version`, `dependencies`, and `error`.
 
 ### Hot-reloading a single plugin
 
-`POST /api/v1/admin/plugins/{name}/reload` (admin-only) shuts one plugin down, drops its routes and its `service_registry`/`event_bus` registrations, re-imports its `service.py`/`router.py`/`plugin.py`, and runs a fresh instance's `register()`+`boot()` — all on the already-running app, no process restart. It deliberately does **not** reload `models.py`/`schemas.py`: SQLAlchemy's `Base.metadata` is a process-wide registry that can't redefine a table's mapped class, so schema changes always need a full restart.
+`POST /api/v1/admin/plugins/{name}/reload` (admin-only) shuts one plugin down, drops its routes and its `service_registry`/`event_bus` registrations, re-imports its `service.py`/`router.py`/`plugin.py`, and runs a fresh instance's `register()`+`boot()`, all on the already-running app, no process restart. It deliberately does **not** reload `models.py`/`schemas.py`: SQLAlchemy's `Base.metadata` is a process-wide registry that can't redefine a table's mapped class, so schema changes always need a full restart.
 
 ### Data layer boundaries
 
-All plugins share one `Base`/engine (single-process, single-database template) — that's a deployment simplification, not an invitation to couple plugins at the data layer:
+All plugins share one `Base`/engine (single-process, single-database template): that's a deployment simplification, not an invitation to couple plugins at the data layer:
 
 - A plugin's SQLAlchemy model must never declare a `ForeignKey` into another plugin's table.
 - No plugin may `select()`/query another plugin's model class directly.
 - Cross-plugin data access always goes through the other plugin's Service (resolved via `service_registry`, never by importing its model class) or through an `event_bus` notification.
 
-The cross-plugin-import half of this (rule 1 below) is enforced automatically — see the next section. The FK/query discipline isn't statically checkable and is a code-review guideline.
+The cross-plugin-import half of this (rule 1 below) is enforced automatically; see the next section. The FK/query discipline isn't statically checkable and is a code-review guideline.
 
 ### Architecture boundary checks
 
 `python scripts/check_architecture_boundaries.py` (also wired into `pytest` via `tests/test_architecture_boundaries.py`, since this repo has no separate CI pipeline) statically enforces:
 
-1. Plugins may not import another plugin's internals (schemas/service/models/router) — only `service_registry`/`event_bus`.
+1. Plugins may not import another plugin's internals (schemas/service/models/router); only `service_registry`/`event_bus`.
 2. `app/api/v1/*` (kernel routes) may not import any plugin's `schemas`/`service`/`models`.
 3. `app/core/*` (the kernel) may not import `app.plugins.*` at all.
 
@@ -201,13 +201,13 @@ pytest tests/test_core.py # core unit tests only
 pytest -v                 # verbose output
 ```
 
-Tests use an **in-memory SQLite** database — no external services required.
+Tests use an **in-memory SQLite** database, no external services required.
 
 ---
 
 ## Documentation
 
-In-depth technical docs live in [`docs/technical/`](./docs/technical/) — architecture, plugin development, operations, API conventions, and testing.
+In-depth technical docs live in [`docs/technical/`](./docs/technical/): architecture, plugin development, operations, API conventions, and testing.
 
 ## Contributing
 
@@ -219,4 +219,4 @@ See [SECURITY.md](./SECURITY.md) to report a vulnerability privately, and for a 
 
 ## License
 
-MIT — see [LICENSE](./LICENSE). Copyright (c) 2026 [Ta-Wei Lin](https://www.linkedin.com/in/da-wei-lin-689a35107/).
+MIT, see [LICENSE](./LICENSE). Copyright (c) 2026 [Ta-Wei Lin](https://www.linkedin.com/in/da-wei-lin-689a35107/).

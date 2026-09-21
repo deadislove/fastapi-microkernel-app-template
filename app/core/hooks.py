@@ -16,7 +16,7 @@ class EventBus:
     """
     Lightweight async pub/sub bus for cross-plugin communication.
 
-    Plugins MUST use this bus instead of importing each other directly —
+    Plugins MUST use this bus instead of importing each other directly:
     that's the only way the kernel can guarantee isolation and safe hot-reload.
 
     Usage:
@@ -39,21 +39,21 @@ class EventBus:
     differently):
 
     Why: hot-reload needs to remove exactly one plugin's subscriptions
-    without touching anyone else's — only possible if every subscription is
+    without touching anyone else's; only possible if every subscription is
     tagged with which plugin made it.
 
     What: `subscribe()` is what creates that tag, so it must go through
     `ctx.event_bus` (a `ScopedEventBus`) rather than importing this module's
-    `event_bus` singleton directly — the plain singleton has no plugin name to
+    `event_bus` singleton directly: the plain singleton has no plugin name to
     attach. `emit()`, by contrast, is a stateless, fire-and-forget broadcast:
     it registers nothing, so it needs no tag and no scoping. A plugin's
-    `service.py` (constructed per-request, with no access to any `ctx` — see
+    `service.py` (constructed per-request, with no access to any `ctx`; see
     `AbstractPlugin`/`KernelContext` in `plugin_base.py`) calling
     `event_bus.emit(...)` directly is therefore intentional and safe, not a
     violation of the "reach the kernel only through `ctx`" rule.
 
     Solution: `scripts/check_architecture_boundaries.py`'s Rule 4 encodes
-    exactly this split automatically — it only flags a bare `event_bus`
+    exactly this split automatically: it only flags a bare `event_bus`
     import inside a plugin's `plugin.py` (where `subscribe()` is called), not
     inside `service.py` (where only `emit()` is legitimate).
     """
@@ -66,12 +66,12 @@ class EventBus:
         logger.debug("Subscribed %s to event '%s'", handler.__qualname__, event)
 
     def unsubscribe(self, event: str, handler: Handler) -> None:
-        # Safe removal — no KeyError if the event was never registered
+        # Safe removal: no KeyError if the event was never registered
         entries = self._handlers.get(event, [])
         self._handlers[event] = [(h, o) for (h, o) in entries if h != handler]
 
     def unsubscribe_all_from(self, owner: str) -> None:
-        """Removes every subscription made with `owner=owner` — used by hot-reload."""
+        """Removes every subscription made with `owner=owner`; used by hot-reload."""
         for event in list(self._handlers.keys()):
             self._handlers[event] = [
                 (h, o) for (h, o) in self._handlers[event] if o != owner
@@ -83,7 +83,7 @@ class EventBus:
         subscribed to it.
 
         Why: without this, "who is listening for what" is a black box you'd
-        have to grep source code to answer — there's no runtime way to
+        have to grep source code to answer; there's no runtime way to
         confirm a plugin's `boot()` actually subscribed to the event you
         expect, or that disabling a plugin really removed its subscription.
 
@@ -129,7 +129,7 @@ class EventBus:
             self._handlers.clear()
 
 
-# Shared singleton — import this in plugins and facades
+# Shared singleton: import this in plugins and facades
 event_bus = EventBus()
 
 
@@ -139,7 +139,7 @@ class ScopedEventBus:
 
     `ctx.event_bus.subscribe(event, handler)` inside a plugin's `boot()`
     automatically tags `owner=<plugin name>` on the underlying bus via this
-    wrapper — plugin code never has to pass its own name, and the loader can
+    wrapper: plugin code never has to pass its own name, and the loader can
     later call `event_bus.unsubscribe_all_from(name)` to cleanly tear down
     just that plugin's subscriptions during a hot-reload.
     """

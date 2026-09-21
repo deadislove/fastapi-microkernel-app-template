@@ -19,7 +19,7 @@ class GlobalExceptionMiddleware(BaseHTTPMiddleware):
     here.  We log the full traceback (so nothing is silently lost) and return
     a structured JSON 500 so the client always gets a parseable response.
 
-    Intentionally does NOT catch HTTPException — FastAPI handles those itself.
+    Intentionally does NOT catch HTTPException; FastAPI handles those itself.
     """
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:

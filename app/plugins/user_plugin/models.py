@@ -24,7 +24,7 @@ class User(Base):
     hashed_password: Mapped[str] = mapped_column(Text, nullable=False)
     full_name: Mapped[str | None] = mapped_column(String(128), nullable=True)
 
-    # Comma-separated roles stored as plain text — simple enough for this template.
+    # Comma-separated roles stored as plain text: simple enough for this template.
     # Replace with a proper roles table if RBAC grows complex.
     roles: Mapped[str] = mapped_column(String(256), nullable=False, default="user")
 

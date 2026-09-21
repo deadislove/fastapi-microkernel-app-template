@@ -39,8 +39,8 @@ class PluginRegistry:
     means tests can inject fake plugins without touching the filesystem.
 
     Also tracks each plugin's lifecycle state (and last error, if any) so
-    callers — the loader's fail-fast/best-effort decision, the health
-    endpoint — can see exactly which plugin, and which stage, is responsible
+    callers (the loader's fail-fast/best-effort decision, the health
+    endpoint) can see exactly which plugin, and which stage, is responsible
     for a failure instead of just an opaque startup crash.
     """
 
@@ -90,7 +90,7 @@ class PluginRegistry:
         self._errors.pop(name, None)
 
 
-# Module-level singleton — the kernel and plugins share this instance
+# Module-level singleton: the kernel and plugins share this instance
 plugin_registry = PluginRegistry()
 
 
@@ -104,7 +104,7 @@ class ServiceRegistry:
     Plugins publish factories here (typically from `boot()`) instead of being
     imported directly by facades or other plugins.  This is what keeps a
     missing/removed plugin from breaking import-time wiring elsewhere in the
-    app — the only sanctioned way to reach another plugin's service is
+    app; the only sanctioned way to reach another plugin's service is
     through here, mirroring the EventBus's role for pub/sub communication.
 
     Entries may optionally be tagged with an `owner` (the publishing plugin's
@@ -115,22 +115,22 @@ class ServiceRegistry:
     differently):
 
     Why: hot-reload needs to revoke exactly one plugin's published
-    capabilities without touching anyone else's — that's only possible if
+    capabilities without touching anyone else's; that's only possible if
     every entry is tagged with which plugin owns it.
 
     What: `provide()` is what creates that tag, so it must go through
     `ctx.service_registry` (a `ScopedServiceRegistry`) rather than importing
-    this module's `service_registry` singleton directly — the plain singleton
+    this module's `service_registry` singleton directly: the plain singleton
     has no plugin name to attach. `resolve()`, by contrast, only reads and
     registers nothing, so it needs no tag and no scoping. A facade, or a
     plugin's own `service.py`/`router.py` (neither of which ever receives a
-    `ctx` — see `AbstractPlugin`/`KernelContext` in `plugin_base.py`),
+    `ctx`; see `AbstractPlugin`/`KernelContext` in `plugin_base.py`),
     importing this singleton to call `resolve(...)` directly is therefore
     intentional and safe, not a violation of the "reach the kernel only
     through `ctx`" rule.
 
     Solution: `scripts/check_architecture_boundaries.py`'s Rule 4 encodes
-    exactly this split automatically — it only flags a bare
+    exactly this split automatically: it only flags a bare
     `service_registry` import inside a plugin's `plugin.py` (where `provide()`
     is called), not inside `service.py`/`router.py` (where only `resolve()`
     is legitimate).
@@ -157,7 +157,7 @@ class ServiceRegistry:
         return list(self._providers.keys())
 
     def revoke_all_from(self, owner: str) -> None:
-        """Removes every entry published with `owner=owner` — used by hot-reload."""
+        """Removes every entry published with `owner=owner`; used by hot-reload."""
         for name in [n for n, o in self._owners.items() if o == owner]:
             self._providers.pop(name, None)
             self._owners.pop(name, None)
@@ -167,7 +167,7 @@ class ServiceRegistry:
         self._owners.clear()
 
 
-# Module-level singleton — plugins provide capabilities, facades/consumers resolve them
+# Module-level singleton: plugins provide capabilities, facades/consumers resolve them
 service_registry = ServiceRegistry()
 
 
@@ -177,7 +177,7 @@ class ScopedServiceRegistry:
 
     `ctx.service_registry.provide(name, factory)` inside a plugin's `boot()`
     automatically tags `owner=<plugin name>` on the underlying registry via
-    this wrapper — plugin code never has to pass its own name, and the loader
+    this wrapper: plugin code never has to pass its own name, and the loader
     can later call `service_registry.revoke_all_from(name)` to cleanly tear
     down just that plugin's capabilities during a hot-reload.
     """

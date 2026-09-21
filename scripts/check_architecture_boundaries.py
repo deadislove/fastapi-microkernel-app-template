@@ -1,11 +1,11 @@
 """
 Why this script exists: the Microkernel module-boundary rules (see
 docs/technical/architecture.md, "Module boundaries") are only real if
-something enforces them — a rule that lives purely in a docstring or a code
+something enforces them: a rule that lives purely in a docstring or a code
 review checklist gets missed the moment someone is in a hurry. What it
 checks, by walking every `.py` file under `app/` with `ast`:
 
-  1. app.plugins.<a> must not import app.plugins.<b> for a != b — plugins may
+  1. app.plugins.<a> must not import app.plugins.<b> for a != b: plugins may
      only reach each other via app.core.registry.service_registry or
      app.core.hooks.event_bus (never each other's Service/model/schema
      classes, and never each other's SQLAlchemy tables/Foreign Keys).
@@ -13,7 +13,7 @@ checks, by walking every `.py` file under `app/` with `ast`:
      app.plugins.*.schemas / .service / .models.
   3. app.core.* (the kernel) must not import app.plugins.* at all.
   4. A plugin's `plugin.py` (its AbstractPlugin lifecycle hooks) must not
-     import the `service_registry`/`event_bus` singletons directly — it must
+     import the `service_registry`/`event_bus` singletons directly; it must
      reach them through the `ctx: KernelContext` parameter instead, since
      `ctx.service_registry`/`ctx.event_bus` are scoped views that tag the
      plugin's name for hot-reload cleanup (see `ServiceRegistry`/`EventBus` in
@@ -21,11 +21,11 @@ checks, by walking every `.py` file under `app/` with `ast`:
      This rule is deliberately scoped to `plugin.py` only: a plugin's
      `service.py`/`router.py` (which never receive a `ctx`) MAY import
      `service_registry`/`event_bus` directly to call `.resolve(...)`/
-     `.emit(...)` — neither registers anything, so neither needs scoping.
+     `.emit(...)`; neither registers anything, so neither needs scoping.
 
 Solution for making the rules stick: wire this into the test suite
-(`tests/test_architecture_boundaries.py`) so `pytest` — the one gate this
-repo already runs on every change — fails on a violation instead of relying
+(`tests/test_architecture_boundaries.py`) so `pytest` (the one gate this
+repo already runs on every change) fails on a violation instead of relying
 on a human to notice one in review. Run directly with:
 `python scripts/check_architecture_boundaries.py`
 """
@@ -37,7 +37,7 @@ from pathlib import Path
 
 APP_ROOT = Path(__file__).resolve().parent.parent / "app"
 
-# Rule 4: names a plugin.py must never import from these modules — must come
+# Rule 4: names a plugin.py must never import from these modules; must come
 # through ctx.service_registry/ctx.event_bus instead.
 _CTX_ONLY_NAMES = {
     "app.core.registry": {"service_registry"},
@@ -101,7 +101,7 @@ def check() -> list[str]:
             if own_plugin and imported_plugin and imported_plugin != own_plugin:
                 violations.append(
                     f"{path}: plugin '{own_plugin}' imports plugin "
-                    f"'{imported_plugin}' ({imported}) directly — use "
+                    f"'{imported_plugin}' ({imported}) directly; use "
                     f"service_registry/event_bus instead."
                 )
 
@@ -116,14 +116,14 @@ def check() -> list[str]:
             ):
                 violations.append(
                     f"{path}: kernel route module imports plugin internal "
-                    f"'{imported}' — core routes must stay plugin-agnostic."
+                    f"'{imported}'; core routes must stay plugin-agnostic."
                 )
 
             # Rule 3: kernel (app.core.*) importing any plugin.
             if own_module.startswith("app.core.") and imported_plugin:
                 violations.append(
                     f"{path}: kernel module imports plugin '{imported_plugin}' "
-                    f"({imported}) — the kernel must stay plugin-agnostic."
+                    f"({imported}); the kernel must stay plugin-agnostic."
                 )
 
         # Rule 4: a plugin's `plugin.py` bypassing ctx for service_registry/event_bus.
@@ -132,7 +132,7 @@ def check() -> list[str]:
                 if name in _CTX_ONLY_NAMES.get(module, set()):
                     violations.append(
                         f"{path}: plugin.py imports '{name}' from '{module}' "
-                        f"directly — lifecycle hooks must use ctx.service_registry"
+                        f"directly; lifecycle hooks must use ctx.service_registry"
                         f"/ctx.event_bus instead."
                     )
 

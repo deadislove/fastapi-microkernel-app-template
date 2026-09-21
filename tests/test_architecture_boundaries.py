@@ -1,7 +1,7 @@
 """
 Enforces the Microkernel module-boundary rules (see docs/technical/architecture.md,
 "Module boundaries", and the docstring of scripts/check_architecture_boundaries.py
-for what the four rules are and why) as part of the regular test suite —
+for what the four rules are and why) as part of the regular test suite;
 `.github/workflows/CI.yaml` also runs the script directly as its own step,
 but wiring it into `pytest` too means a local `pytest` run catches a
 violation just as reliably as CI does, without needing to remember a second
@@ -118,7 +118,7 @@ def test_rule4_catches_plugin_py_bypassing_ctx_for_event_bus(fake_app_root):
 
 
 def test_rule4_does_not_flag_service_py_importing_event_bus(fake_app_root):
-    """service.py/router.py never receive a ctx — direct emit()/resolve() is fine."""
+    """service.py/router.py never receive a ctx: direct emit()/resolve() is fine."""
     _write(
         fake_app_root / "plugins" / "plugin_a" / "service.py",
         "from app.core.hooks import event_bus  # noqa\n"

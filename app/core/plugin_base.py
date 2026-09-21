@@ -23,8 +23,8 @@ class KernelContext:
       1. A plugin's dependency on the kernel is visible in its method
          signature, not hidden behind an import line.
       2. Callers (tests, or a future hot-reload path) can pass a `KernelContext`
-         built from different components — a fake `event_bus`, a
-         plugin-scoped view of `service_registry`, etc. — without
+         built from different components (a fake `event_bus`, a
+         plugin-scoped view of `service_registry`, etc.) without
          monkeypatching module-level singletons.
     """
 
@@ -36,7 +36,7 @@ class KernelContext:
 
 # The kernel's own contract version. Bump the major segment only when a
 # breaking change is made to the plugin lifecycle contract (e.g. adding a
-# required KernelContext field, changing a hook's signature) — a plugin built
+# required KernelContext field, changing a hook's signature): a plugin built
 # against an incompatible major version is skipped by the loader instead of
 # crashing at some arbitrary later point.
 KERNEL_API_VERSION = "1.0"
@@ -59,7 +59,7 @@ class AbstractPlugin(ABC):
       shutdown() → called on application teardown; release resources in reverse
                    registration order to avoid dangling references.
 
-    Returns: None for all hooks — errors should raise, not silently swallow.
+    Returns: None for all hooks; errors should raise, not silently swallow.
     """
 
     # Unique slug used as the plugin's identity in the registry
@@ -71,11 +71,11 @@ class AbstractPlugin(ABC):
     # against another kernel version.
     api_version: ClassVar[str] = KERNEL_API_VERSION
 
-    # The plugin's OWN release version — purely informational (shown by
+    # The plugin's OWN release version: purely informational (shown by
     # `GET /api/v1/health`), and never inspected by the loader. Distinct from
     # `api_version`: that one is about compatibility with the kernel
     # contract; this one is "which build of this plugin is running", useful
-    # once a plugin is maintained/released on its own cadence. Optional —
+    # once a plugin is maintained/released on its own cadence. Optional;
     # defaults to "0.0.0" for plugins that don't track a version.
     version: ClassVar[str] = "0.0.0"
 
@@ -91,10 +91,10 @@ class AbstractPlugin(ABC):
 
     @abstractmethod
     async def boot(self, app: FastAPI, ctx: KernelContext) -> None:
-        """Post-registration init — safe to call facades or other plugins."""
+        """Post-registration init: safe to call facades or other plugins."""
         ...
 
     @abstractmethod
     async def shutdown(self, app: FastAPI, ctx: KernelContext) -> None:
-        """Teardown — close connections, cancel tasks, unregister hooks."""
+        """Teardown: close connections, cancel tasks, unregister hooks."""
         ...

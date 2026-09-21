@@ -102,7 +102,7 @@ async def test_reload_plugin_keeps_routes_working(client):
 async def test_reloaded_plugin_service_capability_still_resolvable(client):
     """
     After reload, the plugin's service_registry entry must have been
-    re-provided by the fresh instance's boot() — not left stale/missing.
+    re-provided by the fresh instance's boot(), not left stale/missing.
     Goes through the Catalog Facade (not the plugin's own router) because
     the facade is what actually depends on `service_registry.resolve(...)`.
     """
@@ -134,7 +134,7 @@ async def test_reload_reports_dependents_that_declare_it(client, monkeypatch):
     """
     reload_one() has no safe way to know whether a dependent plugin's state
     is still valid after its dependency reloads, so it doesn't reload
-    dependents automatically — it only reports them, leaving the decision to
+    dependents automatically; it only reports them, leaving the decision to
     the caller (see PluginLoader.reload_one()'s docstring). Temporarily
     declares user_plugin as depending on product_plugin (the two shipped
     plugins don't actually declare any dependency on each other) to exercise

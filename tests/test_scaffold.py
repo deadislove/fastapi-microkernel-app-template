@@ -1,13 +1,13 @@
 """
 The scaffold generator's rendering logic must produce syntactically valid,
 on-contract plugin code. This deliberately does NOT call
-`scripts/new_plugin.py`'s `main()` — that writes into the real
+`scripts/new_plugin.py`'s `main()`; that writes into the real
 app/plugins/ directory, which a test run must never do as a side effect.
 Instead it exercises `_render()` directly (pure string generation, no I/O)
 and compiles each output.
 
 That's necessarily a lighter check than "does the mechanism actually work
-end-to-end" — compiling isn't the same as running. An actual end-to-end run
+end-to-end": compiling isn't the same as running. An actual end-to-end run
 (scaffold a plugin into a scratch copy of the repo, run its generated test,
 run the full suite) was performed manually while building this feature and
 is not repeated here as a permanent test: a one-off manual verification like

@@ -10,17 +10,17 @@ if TYPE_CHECKING:
 
 class FacadeRegistry:
     """
-    Catalog of every facade class in the app — and, optionally, the
+    Catalog of every facade class in the app, and, optionally, the
     APIRouter each one owns.
 
-    Facades aren't lifecycle-managed like plugins — there's no dynamic
-    discovery/boot step — so registration just happens once, at import time
+    Facades aren't lifecycle-managed like plugins (there's no dynamic
+    discovery/boot step), so registration just happens once, at import time
     (each facade's router module calls `facade_registry.register(FacadeClass,
     router=router)` at its bottom; a facade with no HTTP surface registers
     with `router=None`). `app/facades/__init__.py` imports every facade's
     router module so this side effect runs; `main.py` then mounts whatever
     ends up in `routers()` without needing to import any specific facade by
-    name — the same "add a module, don't touch the composition root" story
+    name: the same "add a module, don't touch the composition root" story
     plugins already have.
     """
 
@@ -47,5 +47,5 @@ class FacadeRegistry:
         return list(self._routers.values())
 
 
-# Module-level singleton — facades self-register against this at import time
+# Module-level singleton: facades self-register against this at import time
 facade_registry = FacadeRegistry()

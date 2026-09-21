@@ -10,4 +10,4 @@ This directory documents how `fastapi-microkernel-app-template` is built and how
 | [api-conventions.md](./api-conventions.md) | The `Result`/`PluginError` pattern, HTTP status mapping, authentication, and rate limiting conventions used across every endpoint. |
 | [testing.md](./testing.md) | The test suite: fixtures, what each test file covers, and the testing conventions (proving a check catches something, not touching the filesystem for scaffold tests, cleaning up injected fake plugins). |
 
-For a fast "clone and run" quick start, see the top-level [README.md](../../README.md) instead — these documents assume you've already got the app running and want to understand *why* it's built this way, or *how* to add to it.
+For a fast "clone and run" quick start, see the top-level [README.md](../../README.md) instead; these documents assume you've already got the app running and want to understand *why* it's built this way, or *how* to add to it.

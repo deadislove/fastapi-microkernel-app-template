@@ -15,7 +15,7 @@ from app.plugins.product_plugin.schemas import (
     StockAdjustment,
 )
 
-# This router lives beside its facade rather than in `app/api/v1/` — the
+# This router lives beside its facade rather than in `app/api/v1/`: the
 # core/kernel route layer should not carry a compile-time dependency on any
 # single plugin's DTOs. `main.py` mounts it as an explicit, separate step from
 # the core routes (health, etc.) to keep that boundary visible.
@@ -93,5 +93,5 @@ async def adjust_inventory_via_facade(
 
 # Self-register with facade_registry, including this router, so main.py can
 # mount it via `facade_registry.routers()` without importing this module by
-# name — see AbstractFacade's docstring for the full wiring.
+# name; see AbstractFacade's docstring for the full wiring.
 facade_registry.register(CatalogFacade, router=router)

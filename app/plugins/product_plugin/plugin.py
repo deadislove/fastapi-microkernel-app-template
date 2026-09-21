@@ -16,7 +16,7 @@ class ProductPlugin(AbstractPlugin):
     async def register(self, app: FastAPI, ctx: KernelContext) -> None:
         # Import models so SQLAlchemy Base picks them up before create_all().
         # `as _models` avoids rebinding the `app` parameter to the `app`
-        # package — a bare `import app.plugins...` would shadow it and break
+        # package: a bare `import app.plugins...` would shadow it and break
         # the `app.include_router(...)` call below.
         import app.plugins.product_plugin.models as _models  # noqa: F401
         from app.plugins.product_plugin.router import router
@@ -27,7 +27,7 @@ class ProductPlugin(AbstractPlugin):
     async def boot(self, app: FastAPI, ctx: KernelContext) -> None:
         # Publish the product capability so facades/other plugins can reach it
         # via `ctx.service_registry.resolve(...)` instead of importing this
-        # class directly — that's what lets this plugin be removed without
+        # class directly: that's what lets this plugin be removed without
         # breaking anyone else's imports.
         ctx.service_registry.provide(
             "product_service_factory", lambda session: ProductService(session)

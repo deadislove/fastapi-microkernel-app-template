@@ -51,7 +51,7 @@ class PluginError(Exception):
     def __repr__(self) -> str:
         return f"PluginError(code={self.code!r}, message={self.message!r})"
 
-    # Convenience constructors — keeps call sites terse
+    # Convenience constructors: keeps call sites terse
     @classmethod
     def not_found(cls, resource: str, identifier: object = None) -> PluginError:
         msg = f"{resource} not found"

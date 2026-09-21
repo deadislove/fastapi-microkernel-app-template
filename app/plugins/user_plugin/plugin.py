@@ -14,7 +14,7 @@ async def _log_product_created(product_id: str = "", sku: str = "", **_: object)
     """
     Demonstrates real cross-plugin collaboration through the EventBus: this
     handler lives in user_plugin, yet reacts to an event emitted by
-    product_plugin — user_plugin never imports anything from
+    product_plugin; user_plugin never imports anything from
     `app.plugins.product_plugin`. If product_plugin is disabled/removed
     (see `settings.enabled_plugins`), user_plugin still boots fine; it just
     never receives this event.
@@ -32,7 +32,7 @@ class UserPlugin(AbstractPlugin):
     async def register(self, app: FastAPI, ctx: KernelContext) -> None:
         # Import models so SQLAlchemy Base picks them up before create_all().
         # `as _models` avoids rebinding the `app` parameter to the `app`
-        # package — a bare `import app.plugins...` would shadow it and break
+        # package: a bare `import app.plugins...` would shadow it and break
         # the `app.include_router(...)` call below.
         import app.plugins.user_plugin.models as _models  # noqa: F401
         from app.plugins.user_plugin.router import auth_router, router
@@ -44,13 +44,13 @@ class UserPlugin(AbstractPlugin):
     async def boot(self, app: FastAPI, ctx: KernelContext) -> None:
         # Publish the user capability so facades/other plugins can reach it via
         # `ctx.service_registry.resolve(...)` instead of importing this class
-        # directly — that's what lets this plugin be removed without breaking
+        # directly: that's what lets this plugin be removed without breaking
         # anyone else's imports.
         ctx.service_registry.provide(
             "user_service_factory", lambda session: UserService(session)
         )
 
-        # Subscribing here — not in register() — is safe because every
+        # Subscribing here (not in register()) is safe because every
         # plugin has finished register() by the time boot() runs, so the
         # event name contract is stable even though we never import the
         # emitting plugin.

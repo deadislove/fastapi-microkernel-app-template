@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     jwt_access_token_expire_minutes: int = 30
     jwt_refresh_token_expire_days: int = 7
 
-    # Database — defaults to SQLite for local dev; swap to asyncpg URL for Postgres
+    # Database: defaults to SQLite for local dev; swap to asyncpg URL for Postgres
     database_url: str = "sqlite+aiosqlite:///./dev.db"
 
     # Plugin loading behavior:
@@ -34,9 +34,9 @@ class Settings(BaseSettings):
     plugin_load_mode: Literal["fail_fast", "best_effort"] = "fail_fast"
 
     # Plugin activation: None (default) loads every discovered plugin; set to
-    # a list to only load plugins whose directory name appears in it — lets
-    # the same codebase enable different plugin sets per environment without
-    # touching code or deleting directories.
+    # a list to only load plugins whose directory name appears in it, so
+    # the same codebase can enable different plugin sets per environment
+    # without touching code or deleting directories.
     enabled_plugins: list[str] | None = None
 
     @field_validator("enabled_plugins", mode="before")
@@ -60,5 +60,5 @@ class Settings(BaseSettings):
         return v
 
 
-# Single shared instance — import this everywhere instead of re-instantiating
+# Single shared instance: import this everywhere instead of re-instantiating
 settings = Settings()

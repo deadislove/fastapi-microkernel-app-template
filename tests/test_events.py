@@ -1,7 +1,7 @@
 """
-Proves the EventBus enables real cross-plugin collaboration — user_plugin
+Proves the EventBus enables real cross-plugin collaboration: user_plugin
 subscribes to product_plugin's `product.created` event in boot() without
-ever importing anything from app.plugins.product_plugin — and that
+ever importing anything from app.plugins.product_plugin, and that
 user_plugin still boots fine when product_plugin isn't loaded at all.
 """
 from __future__ import annotations
@@ -48,8 +48,8 @@ async def test_product_created_event_reaches_user_plugin_handler(client, caplog)
 @pytest.mark.asyncio
 async def test_user_plugin_boots_without_product_plugin(monkeypatch):
     """
-    user_plugin's plugin.py contains zero references to app.plugins.product_plugin
-    — subscribing by event name only. This proves that structurally: with
+    user_plugin's plugin.py contains zero references to app.plugins.product_plugin,
+    subscribing by event name only. This proves that structurally: with
     product_plugin excluded via `enabled_plugins`, user_plugin still reaches
     BOOTED (it just never receives the event).
     """

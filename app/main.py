@@ -85,7 +85,7 @@ def create_app() -> FastAPI:
     # facade coordinates plugins, so its routes belong beside its facade
     # (app/facades/), not in the kernel's own api/v1 layer. Importing
     # `facade_registry` above already imported `app.facades` (running every
-    # facade's self-registration) — this loop doesn't need to know any
+    # facade's self-registration), so this loop doesn't need to know any
     # facade's name, the same way the plugin loader doesn't.
     for facade_router in facade_registry.routers():
         app.include_router(facade_router, prefix="/api/v1")

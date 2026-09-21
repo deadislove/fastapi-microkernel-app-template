@@ -21,7 +21,7 @@ fix the issue before any public disclosure.
 ## Supported Versions
 
 This is a template repository with a single, continuously updated `main`
-branch — there are no maintained release branches. Security fixes are applied
+branch; there are no maintained release branches. Security fixes are applied
 to `main` only; if you've forked or vendored this template into your own
 project, you're responsible for pulling in fixes yourself.
 
@@ -30,31 +30,31 @@ project, you're responsible for pulling in fixes yourself.
 This project is a **template**, not a hardened production deployment. A few
 things are deliberately simplified for clarity and are documented as such in
 [`docs/technical/api-conventions.md`](docs/technical/api-conventions.md) and
-[`docs/technical/operations.md`](docs/technical/operations.md) — please check
+[`docs/technical/operations.md`](docs/technical/operations.md); please check
 there before filing a report, since these are known trade-offs rather than
 bugs:
 
 - **`SECRET_KEY` ships with a placeholder default** (`change-me-in-production-...`).
   You are expected to set a real, random `SECRET_KEY` via environment variable
-  before deploying anywhere reachable — see `.env.example`.
+  before deploying anywhere reachable; see `.env.example`.
 - **JWT claims are not re-checked against the database on every request.** A
   deactivated/deleted user's token stays valid until it expires
   (`JWT_ACCESS_TOKEN_EXPIRE_MINUTES`). If your deployment needs stronger
   revocation guarantees, add a revocation check (e.g. a denylist keyed by
-  token id) — this template doesn't include one.
+  token id); this template doesn't include one.
 - **The hot-reload admin endpoint** (`POST /api/v1/admin/plugins/{name}/reload`)
   re-imports and re-executes plugin code on a live process. It's
-  `require_admin`-gated, but treat the admin role as fully trusted — this
+  `require_admin`-gated, but treat the admin role as fully trusted: this
   endpoint is intentionally powerful, not a sandboxed operation.
 
 If you believe one of these deliberate trade-offs is insufficient for a
 *template's* default posture (as opposed to your own deployment's specific
-requirements), that's still worth reporting — we may tighten the default.
+requirements), that's still worth reporting; we may tighten the default.
 
 ## Scope
 
 This policy covers the code in this repository. It does not cover
-vulnerabilities in third-party dependencies (`requirements.txt`) — please
+vulnerabilities in third-party dependencies (`requirements.txt`); please
 report those to the respective upstream projects. If a dependency
 vulnerability is exploitable specifically because of how this template uses
 it, that is in scope here.

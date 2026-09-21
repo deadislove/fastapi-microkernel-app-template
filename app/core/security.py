@@ -13,7 +13,7 @@ _jwt_service = JWTService()
 
 async def get_current_user_payload(token: str = Depends(oauth2_scheme)) -> TokenPayload:
     """
-    FastAPI dependency — validates the Bearer token and returns its payload.
+    FastAPI dependency: validates the Bearer token and returns its payload.
 
     Raises HTTP 401 on any token problem so route handlers stay clean.
     """

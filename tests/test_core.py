@@ -87,7 +87,7 @@ async def test_event_bus_bad_handler_does_not_propagate():
         raise RuntimeError("boom")
 
     bus.subscribe("test.event", bad_handler)
-    # Should not raise — bad handlers are logged and swallowed
+    # Should not raise: bad handlers are logged and swallowed
     await bus.emit("test.event")
 
 
@@ -114,7 +114,7 @@ def test_event_bus_subscriptions_reports_owners():
     bus = EventBus()
     bus.subscribe("user.created", handler, owner="plugin_a")
     bus.subscribe("user.created", handler, owner="plugin_b")
-    bus.subscribe("product.created", handler)  # no owner — bypassed ctx
+    bus.subscribe("product.created", handler)  # no owner: bypassed ctx
 
     subs = bus.subscriptions()
 
@@ -309,7 +309,7 @@ def _clean_loader_test_singletons():
     PluginLoader drives the module-level `plugin_registry`/`service_registry`
     singletons (shared with the real app). Tests below inject fake plugins
     into them via a monkeypatched `_discover`, so we must scrub any leftovers
-    here — otherwise a fail-fast test that aborts mid-`load_all()` would leak
+    here, otherwise a fail-fast test that aborts mid-`load_all()` would leak
     a FAILED entry that breaks unrelated tests (e.g. the `client` fixture's
     own plugin registration).
     """
@@ -449,7 +449,7 @@ class _DepPluginCycleB(AbstractPlugin):
 
 def test_resolve_load_order_respects_dependencies():
     loader = PluginLoader(FastAPI())
-    # Declared out of dependency order — B depends on A, but A comes second.
+    # Declared out of dependency order: B depends on A, but A comes second.
     ordered = loader._resolve_load_order([_DepPluginB(), _DepPluginA()])
     assert [p.name for p in ordered] == ["loader_test_dep_a", "loader_test_dep_b"]
 
@@ -470,7 +470,7 @@ def test_resolve_load_order_circular_dependency_raises():
 
 class _ConsumerOfDisabledDep(AbstractPlugin):
     name = "loader_test_dep_consumer"
-    # A real, on-disk plugin — just not the one under test in enabled_plugins.
+    # A real, on-disk plugin, just not the one under test in enabled_plugins.
     dependencies = ["user_plugin"]
 
     async def register(self, app, ctx):
@@ -582,7 +582,7 @@ async def test_loader_passes_kernel_context_into_lifecycle_hooks():
 
 def test_catalog_facade_is_self_registered():
     # Importing app.facades (triggered by importing facade_registry) runs
-    # app/facades/__init__.py, which imports app.facades.router — whose
+    # app/facades/__init__.py, which imports app.facades.router, whose
     # bottom calls `facade_registry.register(CatalogFacade, router=router)`.
     # This just confirms that side effect ran.
     from app.facades.catalog_facade import CatalogFacade
@@ -669,7 +669,7 @@ def test_abstract_plugin_defaults_to_current_kernel_api_version():
 
 def test_abstract_plugin_version_defaults_and_is_independent_of_api_version():
     # version is purely informational and defaults independently of
-    # api_version — overriding one must not affect the other.
+    # api_version: overriding one must not affect the other.
     assert _FakePlugin.version == "0.0.0"
 
     class _VersionedPlugin(AbstractPlugin):

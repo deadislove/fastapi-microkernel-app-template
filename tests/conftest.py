@@ -20,7 +20,7 @@ from app.core.rate_limiter import limiter
 from app.infrastructure.database import Base, db_factory
 from app.main import create_app
 
-# In-memory SQLite for tests — no file left behind, no port conflicts
+# In-memory SQLite for tests: no file left behind, no port conflicts
 _TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 
 _PLUGINS_DIR = Path(__file__).resolve().parent.parent / "app" / "plugins"
@@ -44,7 +44,7 @@ def _import_all_plugin_models() -> None:
 
 @pytest_asyncio.fixture(scope="session")
 async def engine():
-    """Single engine for the whole test session — avoids repeated schema creation."""
+    """Single engine for the whole test session; avoids repeated schema creation."""
     _import_all_plugin_models()
 
     eng = create_async_engine(_TEST_DB_URL, echo=False)
@@ -70,10 +70,10 @@ async def client(engine):
 
     Overrides the db_factory.get_session dependency so every request uses the
     test engine instead of the real one, and drives the app's real `lifespan`
-    (via `app.router.lifespan_context`) so the PluginLoader actually runs —
+    (via `app.router.lifespan_context`) so the PluginLoader actually runs:
     without this, plugin-provided routes (auth/users/products) never get
     mounted and every request to them 404s. Also resets the shared rate
-    limiter — it's a process-wide singleton (app.core.rate_limiter.limiter),
+    limiter; it's a process-wide singleton (app.core.rate_limiter.limiter),
     so without a reset, request counts accumulate across every test in the
     session and eventually 429 out endpoints like /auth/register.
     """

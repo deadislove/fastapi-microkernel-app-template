@@ -41,7 +41,7 @@ _PLUGINS_PACKAGE = "app.plugins"
 _PLUGINS_DIR = Path(__file__).parent.parent / "plugins"
 
 # Submodules reloaded by `reload_one()`, in dependency order. Deliberately
-# excludes `models`/`schemas` — see `reload_one()`'s docstring.
+# excludes `models`/`schemas`; see `reload_one()`'s docstring.
 _HOT_RELOAD_SUBMODULES = ("service", "router", "plugin")
 
 
@@ -50,7 +50,7 @@ class PluginLoadError(RuntimeError):
     Raised when the plugin set can't be loaded at all:
       - a plugin's register()/boot() failed in fail_fast mode, or
       - the declared dependency graph is missing a plugin or has a cycle.
-    The latter is always fatal regardless of `plugin_load_mode` — it's a
+    The latter is always fatal regardless of `plugin_load_mode`: it's a
     configuration error, not a single misbehaving plugin.
     """
 
@@ -65,19 +65,19 @@ class PluginLoader:
 
     Plugins are then ordered by their declared `AbstractPlugin.dependencies`
     (topological sort) so that "A depends on B" always means B finishes
-    register()+boot() before A starts — instead of relying on directory /
+    register()+boot() before A starts, instead of relying on directory /
     alphabetical ordering, which only worked by coincidence.
 
     Each plugin's `register()`/`boot()` call is isolated: a failure marks that
     plugin FAILED in `plugin_registry` and, depending on
-    `settings.plugin_load_mode`, either aborts the whole startup (fail_fast —
+    `settings.plugin_load_mode`, either aborts the whole startup (fail_fast,
     the default) or skips just that plugin so the rest of the kernel can still
     come up (best_effort). A plugin whose dependency already failed is skipped
     the same way, since its dependency will never actually finish booting.
 
     Every lifecycle hook receives an explicit `KernelContext` whose
     `event_bus`/`service_registry` are views scoped to that plugin's name (see
-    `ScopedEventBus`/`ScopedServiceRegistry`) — this is what lets
+    `ScopedEventBus`/`ScopedServiceRegistry`); this is what lets
     `reload_one()` selectively tear down just one plugin's routes, published
     capabilities, and event subscriptions.
     """
@@ -150,7 +150,7 @@ class PluginLoader:
             message = f"skipped: dependency failed: {blocking}"
             self._plugin_registry.set_state(plugin.name, PluginState.FAILED, error=message)
             failed.add(plugin.name)
-            logger.error("Plugin '%s' skipped — dependency failed: %s", plugin.name, blocking)
+            logger.error("Plugin '%s' skipped (dependency failed: %s)", plugin.name, blocking)
             return False
         return True
 
@@ -168,7 +168,7 @@ class PluginLoader:
             ) from exc
 
     async def unload_all(self) -> None:
-        # Shutdown in reverse order — mirrors dependency graph teardown
+        # Shutdown in reverse order: mirrors dependency graph teardown
         for plugin in reversed(self._plugin_registry.all()):
             try:
                 await plugin.shutdown(self._app, self._build_ctx_for(plugin.name))
@@ -179,7 +179,7 @@ class PluginLoader:
             finally:
                 self._plugin_registry.unregister(plugin.name)
 
-        # All plugins are gone — any capability/subscription they published is
+        # All plugins are gone; any capability/subscription they published is
         # now stale.
         self._service_registry.clear()
         self._event_bus.clear()
@@ -188,7 +188,7 @@ class PluginLoader:
         """
         Topologically sorts `plugins` by their declared `dependencies` (Kahn's
         algorithm). A missing or circular dependency always aborts startup
-        (raises `PluginLoadError`) regardless of `plugin_load_mode` — it's a
+        (raises `PluginLoadError`) regardless of `plugin_load_mode`: it's a
         static configuration error, not a single plugin misbehaving at
         runtime.
         """
@@ -230,7 +230,7 @@ class PluginLoader:
         What: it might be a genuinely nonexistent plugin name (a bug, almost
         certainly), or it might be a plugin that exists on disk but was
         deliberately excluded via `enabled_plugins` (an environment/config
-        choice that happens to conflict with a `dependencies` declaration —
+        choice that happens to conflict with a `dependencies` declaration,
         not a bug in the plugin itself).
 
         Solution: check whether the dependency's directory actually exists
@@ -275,21 +275,21 @@ class PluginLoader:
             plugin_instance = getattr(module, "plugin", None)
             if plugin_instance is None:
                 logger.warning(
-                    "Plugin package '%s' has no top-level `plugin` attribute — skipping.",
+                    "Plugin package '%s' has no top-level `plugin` attribute, skipping.",
                     module_path,
                 )
                 continue
 
             if not isinstance(plugin_instance, AbstractPlugin):
                 logger.warning(
-                    "'%s.plugin' is not an AbstractPlugin subclass — skipping.",
+                    "'%s.plugin' is not an AbstractPlugin subclass, skipping.",
                     module_path,
                 )
                 continue
 
             if not is_api_version_compatible(plugin_instance.api_version):
                 logger.warning(
-                    "'%s' declares api_version=%s, incompatible with kernel API %s — skipping.",
+                    "'%s' declares api_version=%s, incompatible with kernel API %s, skipping.",
                     module_path,
                     plugin_instance.api_version,
                     KERNEL_API_VERSION,
@@ -326,7 +326,7 @@ class PluginLoader:
         register()+boot().
 
         Why not reload `models.py`/`schemas.py` too: SQLAlchemy's
-        `Base.metadata` is a process-wide registry — once a table's mapped
+        `Base.metadata` is a process-wide registry: once a table's mapped
         class is registered there, the library gives no supported way to
         redefine it. What this means in practice: a schema change (a new
         column, a new table) can't be picked up by re-importing code alone.
@@ -337,12 +337,12 @@ class PluginLoader:
         Why this doesn't reload dependents: figuring out whether a dependent
         plugin's own state is still valid after its dependency changes
         depends entirely on what that dependent plugin actually does with the
-        dependency — this method has no way to know that safely. What that
+        dependency: this method has no way to know that safely. What that
         means: reloading `name` never touches any other plugin that declares
         `name` in its own `dependencies`, even if that dependent's behavior
         was implicitly relying on the old version. Solution: on success, the
         returned list names every currently-loaded plugin in that situation,
-        so the *caller* — who has that context — can decide whether to
+        so the *caller* (who has that context) can decide whether to
         reload them too. This is advisory only: a dependent plugin that only
         resolves its dependency's capability per-call (the pattern every
         shipped plugin uses) keeps working correctly with no action needed;
@@ -358,7 +358,7 @@ class PluginLoader:
         )
         if dependents:
             logger.warning(
-                "Reloading '%s' — plugin(s) %s declare it as a dependency and may need reloading too.",
+                "Reloading '%s': plugin(s) %s declare it as a dependency and may need reloading too.",
                 name,
                 dependents,
             )

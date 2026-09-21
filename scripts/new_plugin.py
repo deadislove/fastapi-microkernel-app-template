@@ -1,9 +1,9 @@
 """
 Why this script exists: a new plugin has several conventions to get right
 (the `AbstractPlugin` contract, the `ctx.service_registry`/`ctx.event_bus`
-scoping rules, the `as _models` import alias, ...) — expecting every author
-to remember all of them from documentation alone means some will inevitably
-be missed. What this does about it: generates a skeleton that already
+scoping rules, the `as _models` import alias, ...), and expecting every
+author to remember all of them from documentation alone means some will
+inevitably be missed. What this does about it: generates a skeleton that already
 follows the current `AbstractPlugin` contract (`KernelContext`, `dependencies`,
 `api_version`, `version`) and the Microkernel boundary rules, so a new plugin
 starts out correct instead of starting out as a copy-paste with gaps. See
@@ -67,14 +67,14 @@ class {class_name}(AbstractPlugin):
     # Other plugin names that must finish register()+boot() before this one.
     # dependencies = ["user_plugin"]
 
-    # This plugin's own release version — purely informational, shown by
+    # This plugin's own release version: purely informational, shown by
     # GET /api/v1/health. Not to be confused with api_version (kernel-contract
     # compatibility, checked by the loader); this one is inspected by nothing.
     # version = "1.0.0"
 
     async def register(self, app: FastAPI, ctx: KernelContext) -> None:
         # `as _models` avoids rebinding the `app` parameter to the `app`
-        # package — a bare `import app.plugins...` would shadow it and break
+        # package: a bare `import app.plugins...` would shadow it and break
         # the `app.include_router(...)` call below.
         import app.plugins.{name}.models as _models  # noqa: F401
 
@@ -247,7 +247,7 @@ async def get_item(
     return {class_name}ItemResponse.model_validate(result.unwrap())
 '''
 
-    test_py = f'''"""Smoke tests for the {name} scaffold — replace with real coverage."""
+    test_py = f'''"""Smoke tests for the {name} scaffold; replace with real coverage."""
 from __future__ import annotations
 
 import pytest

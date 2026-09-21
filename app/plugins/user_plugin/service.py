@@ -23,7 +23,7 @@ class UserService:
     """
     Domain logic for user management and authentication.
 
-    All public methods return Result[T, PluginError] — callers must unwrap
+    All public methods return Result[T, PluginError]; callers must unwrap
     before using the value.  Never raises unless something is truly broken.
     """
 
